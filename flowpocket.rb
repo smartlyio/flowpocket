@@ -4,6 +4,8 @@ require "faraday"
 require "faraday_middleware"
 require "faraday/detailed_logger"
 require "cgi"
+require "logger"
+require "optparse"
 include Twitter::Extractor
 
 POCKET_API_URL = ENV.fetch("POCKET_API_URL", "https://getpocket.com/v3/")
@@ -13,6 +15,15 @@ REDIS_KEY = ENV.fetch("REDIS_KEY", "flowpocket")
 LOGGER = Logger.new(STDOUT)
 
 REDIS = Redis.new
+
+OPTIONS = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: ruby flowpocket.rb [options]"
+
+  opts.on("-n", "--no-post", "Do not post to Pocket") do |no_post|
+    OPTIONS[:no_post] = true
+  end
+end.parse!
 
 FLOWDOCK_CONNECTION = Faraday.new(FLOWDOCK_API_URL) do |faraday|
   faraday.use Faraday::Response::RaiseError
@@ -57,12 +68,10 @@ def url?(url)
 end
 
 def post_url(url, tags = [])
-  begin
-    post_url_to_pocket(url, tags)
-    mark_as_synced(url)
-  rescue => exception
-    LOGGER.info("Failed to post #{url}: #{exception.inspect}")
-  end
+  post_url_to_pocket(url, tags) unless OPTIONS[:no_post]
+  mark_as_synced(url)
+rescue => exception
+  LOGGER.info("Failed to post #{url}: #{exception.inspect}")
 end
 
 organization_access_flows = FLOWDOCK_CONNECTION.get("/flows").body.select do |flow|
