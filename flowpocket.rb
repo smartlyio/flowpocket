@@ -74,11 +74,19 @@ rescue => exception
   LOGGER.info("Failed to post #{url}: #{exception.inspect}")
 end
 
-organization_access_flows = FLOWDOCK_CONNECTION.get("/flows").body.select do |flow|
-  flow["access_mode"] == "organization"
+def allowed_organization?(organization)
+  !ENV.key?("FLOWDOCK_ORGANIZATION") ||
+    ENV['FLOWDOCK_ORGANIZATION'] == organization["parameterized_name"]
 end
 
-organization_access_flows.each do |flow|
+def fetch_flows
+  FLOWDOCK_CONNECTION.get("/flows").body.select do |flow|
+    flow["access_mode"] == "organization" &&
+      allowed_organization?(flow["organization"])
+  end
+end
+
+fetch_flows.each do |flow|
   fetch_messages(flow).each do |message|
     extract_urls(message["content"]).each do |url|
       post_url(url, []) if !synced?(url) && url?(url)
