@@ -1,0 +1,33 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    faraday (0.9.2)
+      multipart-post (>= 1.2, < 3)
+    faraday-detailed_logger (1.0.0)
+      faraday
+    faraday_middleware (0.10.0)
+      faraday (>= 0.7.4, < 0.10)
+    foreman (0.78.0)
+      thor (~> 0.19.1)
+    multipart-post (2.0.0)
+    redis (3.2.2)
+    thor (0.19.1)
+    twitter-text (1.13.3)
+      unf (~> 0.1.0)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.7.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  faraday
+  faraday-detailed_logger
+  faraday_middleware
+  foreman
+  redis
+  twitter-text
+
+BUNDLED WITH
+   1.11.2
